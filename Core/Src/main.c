@@ -24,6 +24,8 @@
 /* USER CODE BEGIN Includes */
 uint16_t analogValue;
 uint16_t pulseWidth;
+int prevState;
+int prevStateDirection;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,15 +100,26 @@ int main(void)
 
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+
+  prevState = HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_7);
+  prevStateDirection = HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_2) || HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_7))
+	  if (HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_2) != prevStateDirection)
+	  {
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_4);
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		  prevStateDirection = HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_2);
+	  }
+
+	  if(HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_7) == GPIO_PIN_SET)
 	  {
 		  pulseWidth = 0;
+		  prevState = HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_7);
 	  }
 	  else
 	  {
@@ -120,6 +133,9 @@ int main(void)
 	  }
 
 	  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pulseWidth);
+	  HAL_Delay(100);
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
